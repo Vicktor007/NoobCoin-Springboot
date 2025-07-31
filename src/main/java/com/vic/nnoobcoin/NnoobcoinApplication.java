@@ -113,7 +113,7 @@ public class NnoobcoinApplication {
             for(int t=0; t <currentBlock.transactions.size(); t++) {
                 Transaction currentTransaction = currentBlock.transactions.get(t);
 
-                if(!currentTransaction.verifySignature()) {
+                if(!currentTransaction.isSignatureValid()) {
                     System.out.println("#Signature on Transaction(" + t + ") is Invalid");
                     return;
                 }

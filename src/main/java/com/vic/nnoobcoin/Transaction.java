@@ -16,7 +16,7 @@ public class Transaction {
     public float value;
     public byte[] signature; // to prevent anyone else from spending our wallet funds
 
-    public ArrayList<TransactionInput> inputs = new ArrayList<TransactionInput>();
+    public ArrayList<TransactionInput> inputs;
     public ArrayList<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
 
     private static int sequence = 0; // a rough count of how many transactions have been generated
@@ -45,13 +45,13 @@ public class Transaction {
     }
 
     // verifies the data we signed hasnt been tampered with
-    public boolean verifySignature() {
+    public boolean isSignatureValid() {
         String data = StringUtil.getStringFromKey(senderAddress) + StringUtil.getStringFromKey(recipientAddress) + Float.toString(value);
         return StringUtil.verifyECDSASig(senderAddress, data, signature);
     }
 
     public boolean processTransaction() {
-        if (!verifySignature()) {
+        if (!isSignatureValid()) {
             System.out.println("Transaction Signature verification failed");
             return false;
         }
