@@ -6,6 +6,8 @@ import com.vic.nnoobcoin.Transaction;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 
@@ -60,6 +62,36 @@ public class StringUtil {
     public static String getStringFromKey(Key key){
         return Base64.getEncoder().encodeToString(key.getEncoded());
     }
+
+
+        public static PrivateKey getPrivateKeyFromString(String key) {
+            try {
+                byte[] keyBytes = Base64.getDecoder().decode(key);
+                PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
+                KeyFactory keyFactory = KeyFactory.getInstance("EC"); // or "ECDSA"
+                return keyFactory.generatePrivate(keySpec);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to convert string to PrivateKey", e);
+            }
+        }
+
+    public static PublicKey getPublicKeyFromString(String key) {
+        try {
+            byte[] keyBytes = Base64.getDecoder().decode(key);
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("EC"); // or "ECDSA"
+            return keyFactory.generatePublic(keySpec);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to convert string to PublicKey", e);
+        }
+    }
+
+    public static byte[] getBytesFromSignatureString(String signatureString) {
+        return Base64.getDecoder().decode(signatureString);
+    }
+
+
+
 
 //    Tacks in array of transactions and returns a merkle root
 

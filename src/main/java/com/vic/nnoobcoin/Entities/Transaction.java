@@ -2,7 +2,11 @@ package com.vic.nnoobcoin.Entities;
 
 
 
+import com.vic.nnoobcoin.utility.StringUtil;
 import jakarta.persistence.*;
+
+import java.security.PrivateKey;
+import java.util.Base64;
 import java.util.List;
 
 @Entity
@@ -29,7 +33,7 @@ public class Transaction {
     @JoinColumn(name = "block_hash", referencedColumnName = "hash")
     private Block block;
 
-    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransactionInput> inputs;
 
     @OneToMany(mappedBy = "parentTransaction", cascade = CascadeType.ALL)
@@ -121,4 +125,19 @@ public class Transaction {
     public void setOutputs(List<TransactionOutput> outputs) {
         this.outputs = outputs;
     }
+
+    // signs all the data we dont wish to be tampered with
+    public void generateSignature(PrivateKey privateKey) {
+        String data = senderAddress + recipientAddress + value;
+        byte[] signatureBytes = StringUtil.applyECDSASig(privateKey, data);
+        this.signature = Base64.getEncoder().encodeToString(signatureBytes); // returns Base64 string
+    }
+
+    // Generate the transactionId using a SHA256 hash and a timestamp
+    public void generateTransactionId() {
+        long timestamp = System.currentTimeMillis();
+        String data = senderAddress + recipientAddress + value + timestamp;
+        this.transactionId = StringUtil.applySha256(data);
+    }
+
 }

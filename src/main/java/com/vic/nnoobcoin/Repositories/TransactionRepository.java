@@ -1,6 +1,7 @@
 package com.vic.nnoobcoin.Repositories;
 
-import com.vic.nnoobcoin.Transaction;
+
+import com.vic.nnoobcoin.Entities.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.security.PublicKey;

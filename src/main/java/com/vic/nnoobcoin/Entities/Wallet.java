@@ -14,11 +14,14 @@ public class Wallet {
     @Column(unique = true)
     private String publicKey;
 
-    // Constructors, getters, setters
-    public Wallet() {}
+    @Column(length = 2048)
+    private String encryptedPrivateKey;  // Base64 AES-encrypted string
 
-    public Wallet(Long id, String publicKey) {
-        this.id = id;
+
+    public Wallet() {
+    }
+
+    public Wallet(String publicKey, String encryptedPrivateKey) {
         this.publicKey = publicKey;
     }
 
@@ -36,5 +39,13 @@ public class Wallet {
 
     public void setPublicKey(String publicKey) {
         this.publicKey = publicKey;
+    }
+
+    public String getEncryptedPrivateKey() {
+        return encryptedPrivateKey;
+    }
+
+    public void setEncryptedPrivateKey(String encryptedPrivateKey) {
+        this.encryptedPrivateKey = encryptedPrivateKey;
     }
 }

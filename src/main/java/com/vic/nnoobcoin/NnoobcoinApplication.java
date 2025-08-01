@@ -1,6 +1,9 @@
 package com.vic.nnoobcoin;
 
 import com.google.gson.GsonBuilder;
+import com.vic.nnoobcoin.Repositories.BlockRepository;
+import com.vic.nnoobcoin.Repositories.TransactionOutputRepository;
+import com.vic.nnoobcoin.Repositories.TransactionRepository;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,6 +15,17 @@ import java.util.HashMap;
 @SpringBootApplication
 public class NnoobcoinApplication {
 
+    private BlockRepository  blockRepository;
+
+    private TransactionRepository transactionRepository;
+
+    private TransactionOutputRepository transactionOutputRepository;
+
+    public NnoobcoinApplication(TransactionRepository transactionRepository, BlockRepository blockRepository, TransactionOutputRepository transactionOutputRepository) {
+        this.blockRepository = blockRepository;
+        this.transactionRepository = transactionRepository;
+        this.transactionOutputRepository = transactionOutputRepository;
+    }
     public static ArrayList<Block> blockChain = new ArrayList<Block>();
     public static HashMap<String,TransactionOutput> UTXOS = new HashMap<String, TransactionOutput>();
 

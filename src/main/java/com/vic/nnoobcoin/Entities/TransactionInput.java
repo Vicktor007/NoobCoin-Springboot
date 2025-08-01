@@ -14,12 +14,29 @@ public class TransactionInput {
 
     private String referencedOutputId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transaction_id", referencedColumnName = "transactionId")
     private Transaction transaction;
 
-    // Constructors, getters, setters
+    private Boolean spent;
+
     public TransactionInput() {}
+
+    public TransactionInput(String referencedOutputId, Transaction transaction, Boolean spent) {
+        this.referencedOutputId = referencedOutputId;
+        this.transaction = transaction;
+        this.spent = spent;
+    }
+
+    public Boolean getSpent() {
+        return spent;
+    }
+
+    public void setSpent(Boolean spent) {
+        this.spent = spent;
+    }
+
+    // Constructors, getters, setters
 
     public Long getId() {
         return id;
