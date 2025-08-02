@@ -1,7 +1,7 @@
 package com.vic.nnoobcoin.utility;
 
 
-import com.vic.nnoobcoin.Transaction;
+import com.vic.nnoobcoin.Entities.Transaction;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -95,7 +95,7 @@ public class StringUtil {
 
 //    Tacks in array of transactions and returns a merkle root
 
-    public static String getMerkleRoot(ArrayList<Transaction> transactions){
+    public static String getMerkleRoot(ArrayList<com.vic.nnoobcoin.Entities.Transaction> transactions){
         int count = transactions.size();
         ArrayList<String> previousTreeLayer = new ArrayList<String>();
         for (Transaction transaction : transactions){

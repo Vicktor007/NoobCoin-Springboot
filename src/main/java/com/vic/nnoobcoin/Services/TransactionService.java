@@ -9,6 +9,7 @@ import com.vic.nnoobcoin.Repositories.TransactionRepository;
 import com.vic.nnoobcoin.utility.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.PrivateKey;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class TransactionService {
     @Autowired
     private TransactionInputRepository transactionInputRepository;
 
+    @Transactional
     public Transaction processTransaction(Transaction transaction, PrivateKey privateKey) throws Exception {
         // Validate signature
         boolean isValid = StringUtil.verifyECDSASig(

@@ -18,7 +18,7 @@ public class Transaction {
     private Long id;
 
     @Column(unique = true)
-    private String transactionId;
+    private String transactionID;
 
     private String senderAddress;
 
@@ -44,7 +44,7 @@ public class Transaction {
 
     public Transaction(Long id, String transactionId, String senderAddress, String recipientAddress, Float value, String signature, Block block, List<TransactionInput> inputs, List<TransactionOutput> outputs) {
         this.id = id;
-        this.transactionId = transactionId;
+        this.transactionID = transactionId;
         this.senderAddress = senderAddress;
         this.recipientAddress = recipientAddress;
         this.value = value;
@@ -63,11 +63,11 @@ public class Transaction {
     }
 
     public String getTransactionId() {
-        return transactionId;
+        return transactionID;
     }
 
     public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
+        this.transactionID = transactionId;
     }
 
     public String getSenderAddress() {
@@ -137,7 +137,7 @@ public class Transaction {
     public void generateTransactionId() {
         long timestamp = System.currentTimeMillis();
         String data = senderAddress + recipientAddress + value + timestamp;
-        this.transactionId = StringUtil.applySha256(data);
+        this.transactionID = StringUtil.applySha256(data);
     }
 
 }
