@@ -18,7 +18,7 @@ public class Transaction {
     private Long id;
 
     @Column(unique = true)
-    private String transactionID;
+    public String transactionID;
 
     private String senderAddress;
 

@@ -3,6 +3,8 @@ package com.vic.nnoobcoin.Entities;
 
 import jakarta.persistence.*;
 
+
+
 @Entity
 @Table(name = "wallets")
 public class Wallet {
