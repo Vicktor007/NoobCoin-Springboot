@@ -1,6 +1,7 @@
 package com.vic.nnoobcoin.Entities;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class Block {
     private Integer nonce;
 
     @OneToMany(mappedBy = "block", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Transaction> transactions;
 
     // Constructors, getters, setters

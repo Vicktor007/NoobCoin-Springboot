@@ -2,6 +2,7 @@ package com.vic.nnoobcoin.Entities;
 
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -23,6 +24,7 @@ public class TransactionOutput {
 
     @ManyToOne
     @JoinColumn(name = "parent_transaction_id", referencedColumnName = "transactionId")
+    @JsonBackReference
     private Transaction parentTransaction;
 
     // Constructors, getters, setters

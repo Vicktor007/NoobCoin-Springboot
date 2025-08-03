@@ -3,11 +3,9 @@ package com.vic.nnoobcoin.Services;
 import com.vic.nnoobcoin.Entities.Transaction;
 import com.vic.nnoobcoin.Entities.TransactionInput;
 import com.vic.nnoobcoin.Entities.TransactionOutput;
-import com.vic.nnoobcoin.Repositories.TransactionInputRepository;
 import com.vic.nnoobcoin.Repositories.TransactionOutputRepository;
 import com.vic.nnoobcoin.Repositories.TransactionRepository;
 import com.vic.nnoobcoin.utility.StringUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,14 +19,17 @@ public class TransactionService {
 
     public static final float MINIMUM_TRANSACTION = 0.1f;
 
-    @Autowired
-    private TransactionRepository transactionRepository;
 
-    @Autowired
-    private TransactionOutputRepository transactionOutputRepository;
+    private final TransactionRepository transactionRepository;
 
-    @Autowired
-    private TransactionInputRepository transactionInputRepository;
+
+    private final TransactionOutputRepository transactionOutputRepository;
+
+    public TransactionService(TransactionRepository transactionRepository, TransactionOutputRepository transactionOutputRepository) {
+        this.transactionRepository = transactionRepository;
+        this.transactionOutputRepository = transactionOutputRepository;
+    }
+
 
     @Transactional
     public Transaction processTransaction(Transaction transaction, PrivateKey privateKey) throws Exception {
@@ -63,6 +64,7 @@ public class TransactionService {
         // Generate transaction ID
         transaction.generateTransactionId();
 
+        System.out.println("transaction id :" + transaction.getTransactionId());
         // Create outputs
         float leftover = totalInputValue - transaction.getValue();
 

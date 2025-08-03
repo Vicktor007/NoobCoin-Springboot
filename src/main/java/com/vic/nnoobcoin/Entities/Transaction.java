@@ -2,6 +2,8 @@ package com.vic.nnoobcoin.Entities;
 
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vic.nnoobcoin.utility.StringUtil;
 import jakarta.persistence.*;
 
@@ -31,6 +33,7 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name = "block_hash", referencedColumnName = "hash")
+    @JsonBackReference
     private Block block;
 
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)

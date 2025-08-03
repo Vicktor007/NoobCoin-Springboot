@@ -1,10 +1,13 @@
 package com.vic.nnoobcoin.Services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.GsonBuilder;
 import com.vic.nnoobcoin.Entities.*;
 import com.vic.nnoobcoin.Repositories.*;
 import com.vic.nnoobcoin.utility.StringUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +23,8 @@ import java.util.List;
 @Component
 public class DataInitializationComponent implements CommandLineRunner {
 
+
+    private ObjectMapper objectMapper;
     private final BlockRepository blockRepository;
     private final TransactionRepository transactionRepository;
     private final TransactionOutputRepository transactionOutputRepository;
@@ -34,9 +39,10 @@ public class DataInitializationComponent implements CommandLineRunner {
     private final BlockService blockService;
 
     public DataInitializationComponent(
-            BlockRepository blockRepository,
+            ObjectMapper objectMapper, BlockRepository blockRepository,
             TransactionRepository transactionRepository,
             TransactionOutputRepository transactionOutputRepository, WalletService walletService, TransactionService transactionService, BlockService blockService) {
+        this.objectMapper = objectMapper;
         this.blockRepository = blockRepository;
         this.transactionRepository = transactionRepository;
         this.transactionOutputRepository = transactionOutputRepository;
@@ -89,20 +95,22 @@ public class DataInitializationComponent implements CommandLineRunner {
         // Persist genesis entities
         transactionRepository.save(genesisTx);
         transactionOutputRepository.save(genesisOutput);
+
         Block genesisBlock = new Block();
-        genesisBlock.setId(Long.valueOf("0"));
         genesisBlock.setTransactions(List.of(genesisTx));
-        blockService.mineBlock(genesisBlock, DIFFICULTY);
+        String hash = blockService.mineBlock(genesisBlock, DIFFICULTY);
+        genesisBlock.setHash(hash);
         blockRepository.save(genesisBlock);
 
         // Continue with block1
-        String pass ;
+
         Block block1 = createAndSaveBlock(genesisBlock, walletA, walletB, 40f, "jonas");
         Block block2 = createAndSaveBlock(block1, walletA, walletB, 1000f, "jonas");
         Block block3 = createAndSaveBlock(block2, walletB, walletA, 20f, "elias");
     }
 
-    private Block createAndSaveBlock(Block previousBlock,
+    @Transactional
+    public Block createAndSaveBlock(Block previousBlock,
                                      Wallet fromWallet,
                                      Wallet toWallet,
                                      float amount, String walletPassphrase) throws Exception {
@@ -112,7 +120,8 @@ public class DataInitializationComponent implements CommandLineRunner {
         blockService.addTransaction(newBlock,
                 walletService.sendFunds(StringUtil.getPublicKeyFromString(toWallet.getPublicKey()), amount), walletService.loadPrivateKey(fromWallet, walletPassphrase)
         );
-        blockService.mineBlock(newBlock, DIFFICULTY);
+           String hash = blockService.mineBlock(newBlock, DIFFICULTY);
+           newBlock.setHash(hash);
         blockRepository.save(newBlock);
         // Save any new transactions/outputs
         for (Transaction tx : newBlock.getTransactions()) {
@@ -127,13 +136,18 @@ public class DataInitializationComponent implements CommandLineRunner {
 
     private void validateChain() {
         List<Block> chain = blockRepository.findAll();
+//        Todo
         // ... (add validation logic similar to isChainValid, using UTXOs map) ...
         System.out.println("Blockchain persisted and validated.");
     }
 
-    private void printChain() {
+
+
+
+    private void printChain() throws JsonProcessingException {
         List<Block> chain = blockRepository.findAll();
-        String json = new GsonBuilder().setPrettyPrinting().create().toJson(chain);
-        System.out.println("\nThe blockchain is: \n" + json);
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(chain);
+        System.out.println(json);
     }
+
 }

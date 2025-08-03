@@ -17,12 +17,10 @@ import java.util.Date;
 @Service
 public class BlockService {
 
-    private final BlockRepository blockRepository;
     private final TransactionRepository transactionRepository;
     private final TransactionService transactionService;
 
-    public BlockService(BlockRepository blockRepository, TransactionRepository transactionRepository, TransactionService transactionService) {
-        this.blockRepository = blockRepository;
+    public BlockService(TransactionRepository transactionRepository, TransactionService transactionService) {
         this.transactionRepository = transactionRepository;
         this.transactionService = transactionService;
 
@@ -37,7 +35,7 @@ public class BlockService {
         );
     }
 
-    public void mineBlock(Block block, int difficulty) {
+    public String mineBlock(Block block, int difficulty) {
         String target = StringUtil.getDificultyString(difficulty);
         block.setMerkleRoot(StringUtil.getMerkleRoot(new ArrayList<>(block.getTransactions())));
         int nonce = block.getNonce() != null ? block.getNonce() : 0;
@@ -49,10 +47,11 @@ public class BlockService {
             hash = calculateHash(block);
         }
 
-        block.setHash(hash);
-        blockRepository.save(block);
-
         System.out.println("Block mined! : " + hash);
+
+        return hash;
+
+
     }
 
     @Transactional
@@ -87,6 +86,6 @@ public class BlockService {
         block.setNonce(0);
         block.setTransactions(new ArrayList<>());
         block.setHash(calculateHash(block));
-        return blockRepository.save(block);
+        return block;
     }
 }
