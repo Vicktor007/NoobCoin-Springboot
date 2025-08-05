@@ -2,12 +2,10 @@ package com.vic.nnoobcoin.Services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.GsonBuilder;
 import com.vic.nnoobcoin.Entities.*;
 import com.vic.nnoobcoin.Repositories.*;
 import com.vic.nnoobcoin.utility.StringUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,30 +22,30 @@ import java.util.List;
 public class DataInitializationComponent implements CommandLineRunner {
 
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
     private final BlockRepository blockRepository;
     private final TransactionRepository transactionRepository;
     private final TransactionOutputRepository transactionOutputRepository;
     private final WalletService walletService;
+    private final BlockChainValidator blockChainValidator;
 
     private static final int DIFFICULTY = 5;
     private static final float MINIMUM_TRANSACTION = 0.1f;
 
     // In-memory UTXO map for validation
     private final HashMap<String, TransactionOutput> UTXOs = new HashMap<>();
-    private final TransactionService transactionService;
     private final BlockService blockService;
 
     public DataInitializationComponent(
             ObjectMapper objectMapper, BlockRepository blockRepository,
             TransactionRepository transactionRepository,
-            TransactionOutputRepository transactionOutputRepository, WalletService walletService, TransactionService transactionService, BlockService blockService) {
+            TransactionOutputRepository transactionOutputRepository, WalletService walletService, BlockChainValidator blockChainValidator, BlockService blockService) {
         this.objectMapper = objectMapper;
         this.blockRepository = blockRepository;
         this.transactionRepository = transactionRepository;
         this.transactionOutputRepository = transactionOutputRepository;
         this.walletService = walletService;
-        this.transactionService = transactionService;
+        this.blockChainValidator = blockChainValidator;
         this.blockService = blockService;
     }
 
@@ -55,6 +53,7 @@ public class DataInitializationComponent implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
         initialize();
+//        blockChainValidator.validateChain();
         validateChain();
         printChain();
     }
@@ -71,10 +70,9 @@ public class DataInitializationComponent implements CommandLineRunner {
 
         // Create genesis transaction
         Transaction genesisTx = new Transaction();
-              genesisTx.setSenderAddress(coinbase.getPublicKey());
-                genesisTx.setRecipientAddress(walletA.getPublicKey());
-                genesisTx.setValue(100f);
-
+        genesisTx.setSenderAddress(coinbase.getPublicKey());
+        genesisTx.setRecipientAddress(walletA.getPublicKey());
+        genesisTx.setValue(100f);
 
 
         genesisTx.generateSignature(walletService.loadPrivateKey(coinbase, "coinbase"));
@@ -92,24 +90,26 @@ public class DataInitializationComponent implements CommandLineRunner {
 
         UTXOs.put(String.valueOf(genesisOutput.getId()), genesisOutput);
 
-        // Persist genesis entities
-        transactionRepository.save(genesisTx);
-        transactionOutputRepository.save(genesisOutput);
+        // Check if genesis block already exists
+        if (blockRepository.count() == 0) {
+            // Persist genesis entities
+            transactionRepository.save(genesisTx);
+            transactionOutputRepository.save(genesisOutput);
 
-        Block genesisBlock = new Block();
-        genesisBlock.setTransactions(List.of(genesisTx));
-        String hash = blockService.mineBlock(genesisBlock, DIFFICULTY);
-        genesisBlock.setHash(hash);
-        blockRepository.save(genesisBlock);
+            Block genesisBlock = blockService.createGenesisBlock(genesisTx);
 
-        // Continue with block1
+            // Continue with block1
+            Block block1 = createAndSaveBlock(genesisBlock, walletA, walletB, 40f, "jonas");
+            Block block2 = createAndSaveBlock(block1, walletA, walletB, 1000f, "jonas");
+            Block block3 = createAndSaveBlock(block2, walletB, walletA, 20f, "elias");
 
-        Block block1 = createAndSaveBlock(genesisBlock, walletA, walletB, 40f, "jonas");
-        Block block2 = createAndSaveBlock(block1, walletA, walletB, 1000f, "jonas");
-        Block block3 = createAndSaveBlock(block2, walletB, walletA, 20f, "elias");
+            System.out.println("✅ Blockchain initialized from scratch.");
+        } else {
+            System.out.println("✅ Blockchain already exists. Skipping genesis block creation.");
+        }
     }
 
-    @Transactional
+        @Transactional
     public Block createAndSaveBlock(Block previousBlock,
                                      Wallet fromWallet,
                                      Wallet toWallet,
@@ -134,11 +134,11 @@ public class DataInitializationComponent implements CommandLineRunner {
         return newBlock;
     }
 
-    private void validateChain() {
-        List<Block> chain = blockRepository.findAll();
-//        Todo
-        // ... (add validation logic similar to isChainValid, using UTXOs map) ...
-        System.out.println("Blockchain persisted and validated.");
+
+    @Transactional(readOnly = true)
+    public void validateChain() {
+        List<Block> chain = blockRepository.findAllByOrderByIdAsc(); // use ordered chain
+        blockChainValidator.validateChain(chain, DIFFICULTY);
     }
 
 

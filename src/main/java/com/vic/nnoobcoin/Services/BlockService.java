@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 @Service
@@ -19,12 +20,27 @@ public class BlockService {
 
     private final TransactionRepository transactionRepository;
     private final TransactionService transactionService;
+    private final BlockRepository blockRepository;
 
-    public BlockService(TransactionRepository transactionRepository, TransactionService transactionService) {
+    private static final int DIFFICULTY = 5;
+
+    public BlockService(TransactionRepository transactionRepository, TransactionService transactionService, BlockRepository blockRepository) {
         this.transactionRepository = transactionRepository;
         this.transactionService = transactionService;
 
+        this.blockRepository = blockRepository;
     }
+
+    public Block createGenesisBlock(Transaction genesisTx) throws Exception {
+        Block genesisBlock = new Block();
+        genesisBlock.setPreviousHash(null); // explicitly set
+        genesisBlock.setTransactions(List.of(genesisTx));
+        String hash = mineBlock(genesisBlock, DIFFICULTY);
+        genesisBlock.setHash(hash);
+        genesisBlock.setTimestamp(new Date().getTime());
+        return blockRepository.save(genesisBlock);
+    }
+
 
     public String calculateHash(Block block) {
         return StringUtil.applySha256(
